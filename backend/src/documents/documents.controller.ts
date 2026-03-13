@@ -3,10 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  MessageEvent,
   Param,
   Post,
   Query,
+  Sse,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { SseService } from '../sse/sse.service';
 import { DocumentsService } from './documents.service';
 
@@ -42,5 +46,13 @@ export class DocumentsController {
     @Query('userEmail') userEmail: string,
   ) {
     return this.documentsService.searchDocuments(query, userEmail);
+  }
+
+  @Sse('events')
+  sse(@Query('userEmail') userEmail: string): Observable<MessageEvent> {
+    const subject = this.sseService.getOrCreateSubject(userEmail);
+    return subject
+      .asObservable()
+      .pipe(map((data) => ({ data }) as MessageEvent));
   }
 }

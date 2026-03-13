@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from './config/configuration';
 import { Document } from './database/entities/document.entity';
 import { SseModule } from './sse/sse.module';
+import { OpensearchModule } from './opensearch/opensearch.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SseModule } from './sse/sse.module';
       inject: [ConfigService],
     }),
     SseModule,
+    OpensearchModule,
   ],
 })
 export class AppModule {}

@@ -1,4 +1,8 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -72,5 +76,25 @@ export class DocumentsService {
       documentId: document.id,
       status,
     });
+  }
+
+  async deleteDocument(id: string, userEmail: string) {
+    const document = await this.documentsRepository.findOne({
+      where: { id, userEmail },
+    });
+    if (!document) throw new Error('Document not found');
+
+    await this.s3.send(
+      new DeleteObjectCommand({
+        Bucket: this.configService.get('aws.s3Bucket'),
+        Key: document.s3Filename,
+      }),
+    );
+
+    try {
+      await this.opensearchService.deleteDocument(id);
+    } catch (e) {}
+
+    await this.documentsRepository.remove(document);
   }
 }

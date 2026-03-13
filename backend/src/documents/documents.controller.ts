@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { SseService } from '../sse/sse.service';
 import { DocumentsService } from './documents.service';
 
@@ -17,5 +25,14 @@ export class DocumentsController {
   @Get()
   async getDocuments(@Query('userEmail') userEmail: string) {
     return this.documentsService.findAllByUser(userEmail);
+  }
+
+  @Delete(':id')
+  async deleteDocument(
+    @Param('id') id: string,
+    @Query('userEmail') userEmail: string,
+  ) {
+    await this.documentsService.deleteDocument(id, userEmail);
+    return { success: true };
   }
 }

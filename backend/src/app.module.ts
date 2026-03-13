@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from './config/configuration';
 import { Document } from './database/entities/document.entity';
+import { SseModule } from './sse/sse.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { Document } from './database/entities/document.entity';
       }),
       inject: [ConfigService],
     }),
+    SseModule,
   ],
 })
 export class AppModule {}

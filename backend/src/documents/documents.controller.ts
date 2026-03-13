@@ -35,4 +35,12 @@ export class DocumentsController {
     await this.documentsService.deleteDocument(id, userEmail);
     return { success: true };
   }
+
+  @Get('search')
+  async search(
+    @Query('q') query: string,
+    @Query('userEmail') userEmail: string,
+  ) {
+    return this.documentsService.searchDocuments(query, userEmail);
+  }
 }

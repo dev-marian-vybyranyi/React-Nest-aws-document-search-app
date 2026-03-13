@@ -97,4 +97,21 @@ export class DocumentsService {
 
     await this.documentsRepository.remove(document);
   }
+
+  async searchDocuments(query: string, userEmail: string) {
+    const hits = await this.opensearchService.search(query, userEmail);
+    const ids = hits.hits.map((h: any) => h._id);
+
+    const documents = await this.documentsRepository.findByIds(ids);
+
+    return hits.hits.map((hit: any) => {
+      const doc = documents.find((d) => d.id === hit._id);
+      return {
+        id: hit._id,
+        userFilename: doc?.userFilename,
+        uploadedAt: doc?.uploadedAt,
+        highlight: hit.highlight?.content?.[0] ?? null,
+      };
+    });
+  }
 }

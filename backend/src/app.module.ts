@@ -3,8 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from './config/configuration';
 import { Document } from './database/entities/document.entity';
-import { SseModule } from './sse/sse.module';
+import { DocumentsModule } from './documents/documents.module';
 import { OpensearchModule } from './opensearch/opensearch.module';
+import { SseModule } from './sse/sse.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OpensearchModule } from './opensearch/opensearch.module';
     }),
     SseModule,
     OpensearchModule,
+    DocumentsModule,
   ],
 })
 export class AppModule {}

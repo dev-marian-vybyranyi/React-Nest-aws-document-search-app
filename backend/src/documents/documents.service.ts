@@ -58,4 +58,19 @@ export class DocumentsService {
       order: { uploadedAt: 'DESC' },
     });
   }
+
+  async updateStatus(s3Filename: string, status: 'success' | 'error') {
+    const document = await this.documentsRepository.findOne({
+      where: { s3Filename },
+    });
+    if (!document) return;
+
+    document.status = status;
+    await this.documentsRepository.save(document);
+
+    this.sseService.emit(document.userEmail, {
+      documentId: document.id,
+      status,
+    });
+  }
 }

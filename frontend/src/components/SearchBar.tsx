@@ -27,9 +27,9 @@ export const SearchBar = () => {
     <div className="flex flex-col gap-6">
       <form
         onSubmit={formik.handleSubmit}
-        className="flex gap-3 group relative"
+        className="flex gap-3 relative"
       >
-        <div className="relative flex-1">
+        <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors text-slate-400 group-focus-within:text-slate-600" />
           <Input
             id="query"
@@ -39,8 +39,17 @@ export const SearchBar = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.query}
-            className="pl-12 h-14 border-slate-200 focus-visible:ring-1 focus-visible:ring-slate-950 rounded-xl text-lg w-full"
+            className="pl-12 pr-12 h-14 border-slate-200 focus-visible:ring-1 focus-visible:ring-slate-950 rounded-xl text-lg w-full"
           />
+          {formik.values.query && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-full transition-colors flex items-center justify-center"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
         <Button
           type="submit"
@@ -48,16 +57,6 @@ export const SearchBar = () => {
         >
           Search
         </Button>
-        {searchResults.length > 0 && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClear}
-            className="h-14 px-4 border-slate-200 hover:bg-slate-100 text-slate-600 rounded-xl transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </Button>
-        )}
       </form>
 
       {searchResults.length > 0 && (

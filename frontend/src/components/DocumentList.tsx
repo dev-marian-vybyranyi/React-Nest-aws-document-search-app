@@ -24,16 +24,21 @@ export const DocumentList = () => {
     );
 
     es.onmessage = (event) => {
-      const data = JSON.parse(event.data) as {
-        documentId: string;
-        status: "success" | "error";
-      };
-      updateDocumentStatus(data.documentId, data.status);
+      try {
+        const parsed = JSON.parse(event.data as string) as {
+          data: { documentId: string; status: "success" | "error" };
+        };
+        const data = parsed.data;
 
-      if (data.status === "success") {
-        toast.success("Document indexed and ready to search!");
-      } else if (data.status === "error") {
-        toast.error("Document indexing failed");
+        updateDocumentStatus(data.documentId, data.status);
+
+        if (data.status === "success") {
+          toast.success("Document indexed and ready to search!");
+        } else if (data.status === "error") {
+          toast.error("Document indexing failed");
+        }
+      } catch (e) {
+        console.error("SSE parse error:", e);
       }
     };
 

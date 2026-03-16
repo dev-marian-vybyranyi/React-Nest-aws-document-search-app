@@ -15,6 +15,7 @@ interface DocumentStore {
   isUploading: boolean;
 
   setUserEmail: (email: string) => void;
+  clearUserEmail: () => void;
   fetchDocuments: () => Promise<void>;
   uploadDocument: (file: File) => Promise<void>;
   removeDocument: (id: string) => Promise<void>;
@@ -35,6 +36,11 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
   setUserEmail: (email: string) => {
     localStorage.setItem("userEmail", email);
     set({ userEmail: email });
+  },
+
+  clearUserEmail: () => {
+    localStorage.removeItem("userEmail");
+    set({ userEmail: null, documents: [], searchResults: [] });
   },
 
   fetchDocuments: async () => {

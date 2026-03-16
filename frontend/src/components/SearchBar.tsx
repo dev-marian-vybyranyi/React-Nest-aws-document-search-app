@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useFormik } from "formik";
 import { Search, X } from "lucide-react";
 import { useDocumentStore } from "../store/documentStore";
+import { SearchResultCard } from "./SearchResultCard";
 
 export const SearchBar = () => {
   const { search, searchResults, clearSearch } = useDocumentStore();
@@ -25,10 +25,7 @@ export const SearchBar = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <form
-        onSubmit={formik.handleSubmit}
-        className="flex gap-3 relative"
-      >
+      <form onSubmit={formik.handleSubmit} className="flex gap-3 relative">
         <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors text-slate-400 group-focus-within:text-slate-600" />
           <Input
@@ -60,25 +57,18 @@ export const SearchBar = () => {
       </form>
 
       {searchResults.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {searchResults.map((result) => (
-            <Card
-              key={result.id}
-              className="overflow-hidden border-slate-200 rounded-xl"
-            >
-              <CardContent className="pt-5 pb-5">
-                <p className="font-semibold text-slate-900 text-lg">
-                  {result.userFilename}
-                </p>
-                {result.highlight && (
-                  <p
-                    className="text-base text-slate-600 mt-2 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: result.highlight }}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex flex-col gap-4 mt-2">
+          <div className="flex items-center justify-left gap-2">
+            <span className="bg-slate-200 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-full">
+              {searchResults.length}{" "}
+            </span>
+            <h2 className="text-xl font-bold text-slate-900">Search Results</h2>
+          </div>
+          <div className="flex flex-col gap-3">
+            {searchResults.map((result) => (
+              <SearchResultCard key={result.id} result={result as any} />
+            ))}
+          </div>
         </div>
       )}
     </div>

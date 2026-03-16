@@ -65,10 +65,18 @@ export const DocumentList = () => {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {documents.map((doc) => (
-        <DocumentCard key={doc.id} doc={doc as any} onDelete={handleDelete} />
-      ))}
+    <div className="flex flex-col gap-4 mt-6">
+      <div className="flex items-center justify-left gap-2">
+        <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">
+          {documents.length}
+        </span>
+        <h2 className="text-xl font-bold text-slate-900">Uploaded Documents</h2>
+      </div>
+      <div className="flex flex-col gap-3">
+        {documents.map((doc) => (
+          <DocumentCard key={doc.id} doc={doc as any} onDelete={handleDelete} />
+        ))}
+      </div>
     </div>
   );
 };

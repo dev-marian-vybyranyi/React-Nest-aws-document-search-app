@@ -1,4 +1,9 @@
 import { create } from "zustand";
+import {
+  getDocuments,
+  getPresignedUrl,
+  uploadToS3,
+} from "../api/documents.api";
 import type { Document, SearchResult } from "../types/document.types";
 
 interface DocumentStore {
@@ -8,9 +13,11 @@ interface DocumentStore {
   isUploading: boolean;
 
   setUserEmail: (email: string) => void;
+  fetchDocuments: () => Promise<void>;
+  uploadDocument: (file: File) => Promise<void>;
 }
 
-export const documentStore = create<DocumentStore>((set) => ({
+export const useDocumentStore = create<DocumentStore>((set, get) => ({
   userEmail: localStorage.getItem("userEmail"),
   documents: [],
   searchResults: [],
@@ -19,5 +26,26 @@ export const documentStore = create<DocumentStore>((set) => ({
   setUserEmail: (email: string) => {
     localStorage.setItem("userEmail", email);
     set({ userEmail: email });
+  },
+
+  fetchDocuments: async () => {
+    const { userEmail } = get();
+    if (!userEmail) return;
+    const documents = await getDocuments(userEmail);
+    set({ documents });
+  },
+
+  uploadDocument: async (file: File) => {
+    const { userEmail, fetchDocuments } = get();
+    if (!userEmail) return;
+
+    set({ isUploading: true });
+    try {
+      const { url } = await getPresignedUrl(userEmail, file.name);
+      await uploadToS3(url, file);
+      await fetchDocuments();
+    } finally {
+      set({ isUploading: false });
+    }
   },
 }));

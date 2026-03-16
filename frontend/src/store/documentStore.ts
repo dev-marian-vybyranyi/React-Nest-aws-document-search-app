@@ -19,6 +19,11 @@ interface DocumentStore {
   uploadDocument: (file: File) => Promise<void>;
   removeDocument: (id: string) => Promise<void>;
   search: (query: string) => Promise<void>;
+  clearSearch: () => void;
+  updateDocumentStatus: (
+    documentId: string,
+    status: "success" | "error",
+  ) => void;
 }
 
 export const useDocumentStore = create<DocumentStore>((set, get) => ({
@@ -65,5 +70,15 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
     if (!userEmail) return;
     const searchResults = await searchDocuments(query, userEmail);
     set({ searchResults });
+  },
+
+  clearSearch: () => set({ searchResults: [] }),
+
+  updateDocumentStatus: (documentId: string, status: "success" | "error") => {
+    set((state) => ({
+      documents: state.documents.map((doc) =>
+        doc.id === documentId ? { ...doc, status } : doc,
+      ),
+    }));
   },
 }));

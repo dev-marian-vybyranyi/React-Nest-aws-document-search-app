@@ -17,10 +17,10 @@ interface DocumentCardProps {
   onDelete: (id: string) => void;
 }
 
-const statusColor = {
-  pending: "secondary",
-  success: "default",
-  error: "destructive",
+const statusStyles = {
+  pending: "bg-blue-100 text-blue-700",
+  success: "bg-emerald-100 text-emerald-700",
+  error: "bg-rose-100 text-rose-700",
 } as const;
 
 const statusLabel = {
@@ -49,8 +49,8 @@ export const DocumentCard = ({ doc, onDelete }: DocumentCardProps) => {
         </div>
         <div className="flex items-center gap-4">
           <Badge
-            variant={statusColor[doc.status]}
-            className="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-lg"
+            variant="secondary"
+            className={`px-3 py-1 text-xs font-semibold uppercase rounded-lg transition-colors ${statusStyles[doc.status]}`}
           >
             {statusLabel[doc.status]}
           </Badge>
@@ -58,8 +58,9 @@ export const DocumentCard = ({ doc, onDelete }: DocumentCardProps) => {
             variant="ghost"
             size="icon"
             onClick={() => onDelete(doc.id)}
-            className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors h-10 w-10 shrink-0"
+            className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl h-10 w-10 shrink-0"
             title="Delete document"
+
           >
             <Trash2 className="w-5 h-5" />
           </Button>

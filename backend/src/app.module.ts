@@ -5,6 +5,7 @@ import configuration from './config/configuration';
 import { Document } from './database/entities/document.entity';
 import { DocumentsModule } from './documents/documents.module';
 import { OpensearchModule } from './opensearch/opensearch.module';
+import { SqsModule } from './sqs/sqs.module';
 import { SseModule } from './sse/sse.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { SseModule } from './sse/sse.module';
     SseModule,
     OpensearchModule,
     DocumentsModule,
+    SqsModule,
   ],
 })
 export class AppModule {}

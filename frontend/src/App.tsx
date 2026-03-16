@@ -1,6 +1,7 @@
 import { Toaster } from "react-hot-toast";
 import { EmailGate } from "./components/EmailGate";
 import { useDocumentStore } from "./store/documentStore";
+import { UploadButton } from "./components/UploadButton";
 
 function App() {
   const userEmail = useDocumentStore((s) => s.userEmail);
@@ -17,6 +18,7 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
+      <UploadButton />
     </>
   );
 }

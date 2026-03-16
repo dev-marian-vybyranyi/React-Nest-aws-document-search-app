@@ -3,6 +3,7 @@ import { EmailGate } from "./components/EmailGate";
 import { SearchBar } from "./components/SearchBar";
 import { UploadButton } from "./components/UploadButton";
 import { useDocumentStore } from "./store/documentStore";
+import { DocumentList } from "./components/DocumentList";
 
 function App() {
   const userEmail = useDocumentStore((s) => s.userEmail);
@@ -21,6 +22,7 @@ function App() {
       <Toaster position="top-right" />
       <UploadButton />
       <SearchBar />
+      <DocumentList />
     </>
   );
 }

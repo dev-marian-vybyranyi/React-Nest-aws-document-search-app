@@ -106,11 +106,13 @@ export class DocumentsService {
 
     return hits.hits.map((hit: any) => {
       const doc = documents.find((d) => d.id === hit._id);
+      const highlights = hit.highlight?.content ?? [];
+
       return {
         id: hit._id,
         userFilename: doc?.userFilename,
         uploadedAt: doc?.uploadedAt,
-        highlight: hit.highlight?.content?.[0] ?? null,
+        highlight: highlights.join(' ... <br>'),
       };
     });
   }

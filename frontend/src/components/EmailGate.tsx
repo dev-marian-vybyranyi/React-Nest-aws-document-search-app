@@ -2,17 +2,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Mail } from "lucide-react";
-import { useState } from "react";
+import { useFormik } from "formik";
 import { useDocumentStore } from "../store/documentStore";
+import { emailValidationSchema } from "../validations/emailValidation";
 
 export const EmailGate = () => {
-  const [email, setEmail] = useState("");
   const setUserEmail = useDocumentStore((s) => s.setUserEmail);
 
-  const handleSubmit = () => {
-    if (!email.includes("@")) return;
-    setUserEmail(email);
-  };
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+    },
+    validationSchema: emailValidationSchema,
+    onSubmit: (values) => {
+      setUserEmail(values.email);
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white overflow-hidden">
@@ -27,25 +32,46 @@ export const EmailGate = () => {
             </p>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6 px-4 pb-6">
-          <div className="relative group">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600" />
-            <Input
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              className="pl-12 h-14 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-indigo-600 transition-all rounded-xl text-lg"
-            />
-          </div>
-          <Button
-            onClick={handleSubmit}
-            className="w-full h-14 bg-slate-900 hover:bg-indigo-600 text-white text-lg font-semibold rounded-xl"
-          >
-            Continue
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
+        <CardContent className="px-4 pb-6">
+          <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6">
+            <div className="space-y-2">
+              <div className="relative group">
+                <Mail
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${
+                    formik.touched.email && formik.errors.email
+                      ? "text-red-500"
+                      : "text-slate-400 group-focus-within:text-slate-600"
+                  }`}
+                />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.email}
+                  className={`pl-12 h-14 border-slate-200 focus-visible:ring-1 focus-visible:ring-slate-950 rounded-xl text-lg ${
+                    formik.touched.email && formik.errors.email
+                      ? "border-red-500 focus-visible:ring-red-500"
+                      : ""
+                  }`}
+                />
+              </div>
+              {formik.touched.email && formik.errors.email ? (
+                <div className="text-red-500 text-sm font-medium px-2">
+                  {formik.errors.email}
+                </div>
+              ) : null}
+            </div>
+            <Button
+              type="submit"
+              className="w-full h-14 bg-slate-900 hover:bg-slate-600 text-white text-lg font-semibold rounded-xl transition-colors"
+            >
+              Continue
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

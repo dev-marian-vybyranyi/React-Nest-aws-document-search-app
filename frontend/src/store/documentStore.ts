@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import {
+  deleteDocument,
   getDocuments,
   getPresignedUrl,
+  searchDocuments,
   uploadToS3,
 } from "../api/documents.api";
 import type { Document, SearchResult } from "../types/document.types";
@@ -15,6 +17,8 @@ interface DocumentStore {
   setUserEmail: (email: string) => void;
   fetchDocuments: () => Promise<void>;
   uploadDocument: (file: File) => Promise<void>;
+  removeDocument: (id: string) => Promise<void>;
+  search: (query: string) => Promise<void>;
 }
 
 export const useDocumentStore = create<DocumentStore>((set, get) => ({
@@ -47,5 +51,19 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
     } finally {
       set({ isUploading: false });
     }
+  },
+
+  removeDocument: async (id: string) => {
+    const { userEmail, fetchDocuments } = get();
+    if (!userEmail) return;
+    await deleteDocument(id, userEmail);
+    await fetchDocuments();
+  },
+
+  search: async (query: string) => {
+    const { userEmail } = get();
+    if (!userEmail) return;
+    const searchResults = await searchDocuments(query, userEmail);
+    set({ searchResults });
   },
 }));

@@ -38,10 +38,12 @@ export const DocumentCard = ({ doc, onDelete }: DocumentCardProps) => {
             {doc.userFilename}
           </p>
           <p className="text-sm font-medium text-slate-500">
-            {new Date(doc.uploadedAt).toLocaleDateString(undefined, {
+            {new Date(doc.uploadedAt).toLocaleString("en-US", {
               year: "numeric",
               month: "short",
               day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </p>
         </div>

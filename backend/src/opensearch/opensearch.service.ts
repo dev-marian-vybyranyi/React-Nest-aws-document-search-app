@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@opensearch-project/opensearch';
 
 @Injectable()
-export class OpensearchService {
+export class OpensearchService implements OnModuleInit {
   private client: Client;
   private readonly index = 'documents';
 
@@ -16,6 +16,27 @@ export class OpensearchService {
       },
       ssl: { rejectUnauthorized: false },
     });
+  }
+
+  async onModuleInit() {
+    await this.ensureIndex();
+  }
+
+  private async ensureIndex() {
+    const exists = await this.client.indices.exists({ index: this.index });
+    if (!exists.body) {
+      await this.client.indices.create({
+        index: this.index,
+        body: {
+          mappings: {
+            properties: {
+              content: { type: 'text' },
+              userEmail: { type: 'keyword' },
+            },
+          },
+        },
+      });
+    }
   }
 
   async indexDocument(documentId: string, content: string, userEmail: string) {

@@ -1,0 +1,85 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: backend
+        run: npm run test
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: self-hosted
+    needs: test
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        working-directory: backend
+        run: |
+          cat > .env << EOF
+          DATABASE_HOST=${{ secrets.DATABASE_HOST }}
+          DATABASE_PORT=${{ secrets.DATABASE_PORT }}
+          DATABASE_USER=${{ secrets.DATABASE_USER }}
+          DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+          DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+          AWS_REGION=${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
+          AWS_SQS_QUEUE_URL=${{ secrets.AWS_SQS_QUEUE_URL }}
+          AWS_OPENSEARCH_ENDPOINT=${{ secrets.AWS_OPENSEARCH_ENDPOINT }}
+          OPENSEARCH_USERNAME=${{ secrets.OPENSEARCH_USERNAME }}
+          OPENSEARCH_PASSWORD=${{ secrets.OPENSEARCH_PASSWORD }}
+          PORT=3000
+          EOF
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build
+        working-directory: backend
+        run: npm run build
+
+      - name: Restart PM2
+        working-directory: backend
+        run: |
+          pm2 describe document-search > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+            pm2 restart document-search
+          else
+            pm2 start dist/main.js --name document-search
+          fi
+          pm2 save
+
+      - name: Verify
+        run: pm2 show document-search | grep status

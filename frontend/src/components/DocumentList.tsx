@@ -20,7 +20,7 @@ export const DocumentList = () => {
     if (!userEmail) return;
 
     const es = new EventSource(
-      `http://localhost:3000/documents/events?userEmail=${encodeURIComponent(userEmail)}`,
+      `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/documents/events?userEmail=${encodeURIComponent(userEmail)}`,
     );
 
     es.onmessage = (event) => {

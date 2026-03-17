@@ -71,8 +71,8 @@ jobs:
         run: npm run build
 
       - name: Restart PM2
-        working-directory: backend
         run: |
+          cd $GITHUB_WORKSPACE/backend
           if pm2 describe document-search > /dev/null 2>&1; then
             pm2 restart document-search
           else

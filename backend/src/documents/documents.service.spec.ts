@@ -98,4 +98,130 @@ describe('DocumentsService', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('updateStatus', () => {
+    it('should update status to success and emit SSE', async () => {
+      const mockDoc = {
+        id: 'uuid-1',
+        userEmail: 'test@gmail.com',
+        s3Filename: 'uuid.pdf',
+        status: 'pending',
+      };
+
+      mockRepository.findOne.mockResolvedValue(mockDoc);
+      mockRepository.save.mockResolvedValue({ ...mockDoc, status: 'success' });
+
+      await service.updateStatus('uuid.pdf', 'success');
+
+      expect(mockRepository.save).toHaveBeenCalledWith({
+        ...mockDoc,
+        status: 'success',
+      });
+      expect(mockSseService.emit).toHaveBeenCalledWith('test@gmail.com', {
+        documentId: 'uuid-1',
+        status: 'success',
+      });
+    });
+
+    it('should do nothing if document not found', async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      await service.updateStatus('non-existent.pdf', 'success');
+      expect(mockRepository.save).not.toHaveBeenCalled();
+      expect(mockSseService.emit).not.toHaveBeenCalled();
+    });
+
+    it('should update status to error and emit SSE', async () => {
+      const mockDoc = {
+        id: 'uuid-1',
+        userEmail: 'test@gmail.com',
+        s3Filename: 'uuid.pdf',
+        status: 'pending',
+      };
+
+      mockRepository.findOne.mockResolvedValue(mockDoc);
+      mockRepository.save.mockResolvedValue({ ...mockDoc, status: 'error' });
+
+      await service.updateStatus('uuid.pdf', 'error');
+
+      expect(mockSseService.emit).toHaveBeenCalledWith('test@gmail.com', {
+        documentId: 'uuid-1',
+        status: 'error',
+      });
+    });
+  });
+
+  describe('deleteDocument', () => {
+    it('should throw if document not found', async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.deleteDocument('non-existent-id', 'test@gmail.com'),
+      ).rejects.toThrow('Document not found');
+    });
+
+    it('should delete from opensearch and db', async () => {
+      const mockDoc = {
+        id: 'uuid-1',
+        userEmail: 'test@gmail.com',
+        s3Filename: 'uuid.pdf',
+        userFilename: 'test.pdf',
+      };
+
+      mockRepository.findOne.mockResolvedValue(mockDoc);
+      mockRepository.remove.mockResolvedValue(mockDoc);
+      mockOpensearchService.deleteDocument.mockResolvedValue(undefined);
+
+      await service.deleteDocument('uuid-1', 'test@gmail.com');
+
+      expect(mockOpensearchService.deleteDocument).toHaveBeenCalledWith(
+        'uuid-1',
+      );
+      expect(mockRepository.remove).toHaveBeenCalledWith(mockDoc);
+    });
+  });
+
+  describe('searchDocuments', () => {
+    it('should return search results with highlights', async () => {
+      const mockHits = {
+        hits: [
+          {
+            _id: 'uuid-1',
+            highlight: {
+              content: ['...some <mark>highlighted</mark> text...'],
+            },
+          },
+        ],
+      };
+
+      const mockDocs = [
+        {
+          id: 'uuid-1',
+          userFilename: 'test.pdf',
+          uploadedAt: new Date(),
+        },
+      ];
+
+      mockOpensearchService.search.mockResolvedValue(mockHits);
+      mockRepository.findByIds.mockResolvedValue(mockDocs);
+
+      const results = await service.searchDocuments(
+        'highlighted',
+        'test@gmail.com',
+      );
+
+      expect(results[0].highlight).toContain('<mark>highlighted</mark>');
+      expect(results[0].userFilename).toBe('test.pdf');
+    });
+
+    it('should return empty array if no results', async () => {
+      mockOpensearchService.search.mockResolvedValue({ hits: [] });
+      mockRepository.findByIds.mockResolvedValue([]);
+
+      const results = await service.searchDocuments(
+        'nothing',
+        'test@gmail.com',
+      );
+      expect(results).toEqual([]);
+    });
+  });
 });

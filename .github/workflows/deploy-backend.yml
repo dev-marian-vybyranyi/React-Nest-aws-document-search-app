@@ -73,8 +73,7 @@ jobs:
       - name: Restart PM2
         working-directory: backend
         run: |
-          pm2 describe document-search > /dev/null 2>&1
-          if [ $? -eq 0 ]; then
+          if pm2 describe document-search > /dev/null 2>&1; then
             pm2 restart document-search
           else
             pm2 start dist/main.js --name document-search
@@ -82,4 +81,4 @@ jobs:
           pm2 save
 
       - name: Verify
-        run: pm2 show document-search | grep status
+        run: pm2 show document-search | grep online

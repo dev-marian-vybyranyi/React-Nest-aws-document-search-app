@@ -36,7 +36,7 @@ export const SearchBar = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.query}
-            className="pl-12 pr-12 h-14 border-slate-200 focus-visible:ring-1 focus-visible:ring-slate-950 rounded-xl text-lg w-full"
+            className="pl-12 pr-12 h-14 border-slate-200 focus-visible:ring-1 focus-visible:ring-slate-950 rounded-xl text-lg w-full bg-white"
           />
           {formik.values.query && (
             <button

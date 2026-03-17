@@ -11,6 +11,7 @@ import * as mammoth from 'mammoth';
 import { PDFParse } from 'pdf-parse';
 import { Readable } from 'stream';
 import { Repository } from 'typeorm';
+import WordExtractor from 'word-extractor';
 import { Document } from '../database/entities/document.entity';
 import { DocumentsService } from '../documents/documents.service';
 import { OpensearchService } from '../opensearch/opensearch.service';
@@ -125,6 +126,10 @@ export class SqsService implements OnModuleInit {
       } else if (s3Filename.endsWith('.docx')) {
         const parsed = await mammoth.extractRawText({ buffer });
         text = parsed.value;
+      } else if (s3Filename.endsWith('.doc')) {
+        const extractor = new WordExtractor();
+        const extracted = await extractor.extract(buffer);
+        text = extracted.getBody();
       }
 
       const document = await this.documentsRepository.findOne({

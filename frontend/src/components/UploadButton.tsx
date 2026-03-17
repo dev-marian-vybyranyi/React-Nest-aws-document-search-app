@@ -38,7 +38,7 @@ export const UploadButton = () => {
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,.docx"
+        accept=".pdf,.docx,.doc"
         className="hidden"
         onChange={handleFileChange}
       />

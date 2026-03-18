@@ -170,9 +170,13 @@ export class DocumentsService {
     const ids = hits.hits.map((h: any) => h._id);
 
     const documents = await this.documentsRepository.findByIds(ids);
+    const documentsMap = documents.reduce((acc, doc) => {
+      acc[doc.id] = doc;
+      return acc;
+    }, {} as Record<string, Document>);
 
     return hits.hits.map((hit: any) => {
-      const doc = documents.find((d) => d.id === hit._id);
+      const doc = documentsMap[hit._id];
       const highlights = hit.highlight?.content ?? [];
 
       return {

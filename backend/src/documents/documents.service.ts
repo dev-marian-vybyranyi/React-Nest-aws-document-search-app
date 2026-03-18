@@ -1,10 +1,10 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
-  PutObjectCommand,
   S3Client,
+  HeadObjectCommand,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -34,17 +34,33 @@ export class DocumentsService {
     });
   }
 
-  async getPresignedUrl(userEmail: string, originalFilename: string) {
-    const ext = originalFilename.split('.').pop();
-    const s3Filename = `${uuidv4()}.${ext}`;
+  async createDocument(userEmail: string, originalFilename: string, key: string) {
+    if (!key.startsWith('tmp/')) {
+        throw new BadRequestException('Invalid temporary file key');
+    }
+
     const bucket = this.configService.get('aws.s3Bucket');
+    const s3Filename = key.replace('tmp/', '');
 
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: s3Filename,
-    });
+    try {
+      await this.s3.send(new HeadObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }));
 
-    const url = await getSignedUrl(this.s3, command, { expiresIn: 300 });
+      await this.s3.send(new CopyObjectCommand({
+        Bucket: bucket,
+        CopySource: `${bucket}/${key}`,
+        Key: s3Filename,
+      }));
+
+      await this.s3.send(new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }));
+    } catch (e) {
+      throw new BadRequestException('Invalid or missing uploaded file in temporary storage');
+    }
 
     const document = this.documentsRepository.create({
       userEmail,
@@ -54,7 +70,7 @@ export class DocumentsService {
     });
 
     await this.documentsRepository.save(document);
-    return { url, documentId: document.id, s3Filename };
+    return { documentId: document.id, s3Filename };
   }
 
   async findAllByUser(userEmail: string) {

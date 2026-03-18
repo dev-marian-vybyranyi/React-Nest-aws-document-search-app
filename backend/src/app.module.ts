@@ -7,6 +7,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { OpensearchModule } from './opensearch/opensearch.module';
 import { SqsModule } from './sqs/sqs.module';
 import { SseModule } from './sse/sse.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -32,6 +33,8 @@ import { SseModule } from './sse/sse.module';
     OpensearchModule,
     DocumentsModule,
     SqsModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}
+

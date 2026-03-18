@@ -7,6 +7,8 @@ describe('Documents API (e2e)', () => {
   let app: INestApplication;
   const testEmail = 'e2e-test@gmail.com';
   let createdDocumentId: string;
+  let uploadKey: string;
+  let uploadUrl: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -22,17 +24,41 @@ describe('Documents API (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /documents/presigned-url', () => {
-    it('should return presigned url and create document', async () => {
+  describe('GET /uploads/presigned-url', () => {
+    it('should return presigned url', async () => {
       const response = await request(app.getHttpServer())
-        .post('/documents/presigned-url')
-        .send({ userEmail: testEmail, filename: 'e2e-test.pdf' })
-        .expect(201);
+        .get('/uploads/presigned-url')
+        .query({ filename: 'e2e-test.pdf' })
+        .expect(200);
 
       expect(response.body).toHaveProperty('url');
+      expect(response.body).toHaveProperty('key');
+      expect(response.body.url).toContain('amazonaws.com');
+
+      uploadUrl = response.body.url;
+      uploadKey = response.body.key;
+    });
+  });
+
+  describe('POST /documents', () => {
+    it('should upload file to S3 and then create document', async () => {
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: Buffer.from('mock pdf content'),
+        headers: {
+          'Content-Type': 'application/pdf',
+        },
+      });
+
+      expect(uploadResponse.ok).toBe(true);
+
+      const response = await request(app.getHttpServer())
+        .post('/documents')
+        .send({ userEmail: testEmail, originalFilename: 'e2e-test.pdf', key: uploadKey })
+        .expect(201);
+
       expect(response.body).toHaveProperty('documentId');
       expect(response.body).toHaveProperty('s3Filename');
-      expect(response.body.url).toContain('amazonaws.com');
 
       createdDocumentId = response.body.documentId;
     });

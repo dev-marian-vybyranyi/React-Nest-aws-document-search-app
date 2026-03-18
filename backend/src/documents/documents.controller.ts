@@ -21,9 +21,9 @@ export class DocumentsController {
     private readonly sseService: SseService,
   ) {}
 
-  @Post('presigned-url')
-  async getPresignedUrl(@Body() body: { userEmail: string; filename: string }) {
-    return this.documentsService.getPresignedUrl(body.userEmail, body.filename);
+  @Post()
+  async createDocument(@Body() body: { userEmail: string; originalFilename: string; key: string }) {
+    return this.documentsService.createDocument(body.userEmail, body.originalFilename, body.key);
   }
 
   @Get()

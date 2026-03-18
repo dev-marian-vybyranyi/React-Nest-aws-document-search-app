@@ -41,6 +41,12 @@ export class DocumentUploadedHandler {
       const s3Filename = decodeURIComponent(
         record.s3.object.key.replace(/\+/g, ' '),
       );
+
+      if (s3Filename.startsWith('tmp/')) {
+        this.logger.debug(`Ignoring temporary file: ${s3Filename}`);
+        continue;
+      }
+
       await this.processFile(s3Filename);
     }
   }

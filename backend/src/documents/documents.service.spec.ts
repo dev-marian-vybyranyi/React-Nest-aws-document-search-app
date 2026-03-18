@@ -2,12 +2,9 @@ jest.mock('@aws-sdk/client-s3', () => ({
   S3Client: jest.fn().mockImplementation(() => ({
     send: jest.fn().mockResolvedValue({}),
   })),
-  PutObjectCommand: jest.fn(),
+  CopyObjectCommand: jest.fn(),
   DeleteObjectCommand: jest.fn(),
-}));
-
-jest.mock('@aws-sdk/s3-request-presigner', () => ({
-  getSignedUrl: jest.fn().mockResolvedValue('https://mock-s3-url.com/test.pdf'),
+  HeadObjectCommand: jest.fn(),
 }));
 
 import { Test, TestingModule } from '@nestjs/testing';
@@ -66,6 +63,38 @@ describe('DocumentsService', () => {
 
     service = module.get<DocumentsService>(DocumentsService);
     jest.clearAllMocks();
+  });
+
+  describe('createDocument', () => {
+    it('should throw exception if key does not start with tmp/', async () => {
+      await expect(
+        service.createDocument('test@gmail.com', 'test.pdf', 'test.pdf'),
+      ).rejects.toThrow('Invalid temporary file key');
+    });
+
+    it('should copy file from tmp location and save document', async () => {
+      const mockDoc = { id: 'uuid-1', s3Filename: 'test.pdf' };
+      mockRepository.create.mockReturnValue(mockDoc);
+      mockRepository.save.mockResolvedValue(mockDoc);
+
+      const result = await service.createDocument(
+        'test@gmail.com',
+        'test.pdf',
+        'tmp/test.pdf',
+      );
+
+      expect(mockRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userEmail: 'test@gmail.com',
+          userFilename: 'test.pdf',
+          s3Filename: 'test.pdf',
+          status: 'pending',
+        }),
+      );
+      expect(mockRepository.save).toHaveBeenCalledWith(mockDoc);
+      expect(result.documentId).toBe('uuid-1');
+      expect(result.s3Filename).toBe('test.pdf');
+    });
   });
 
   describe('findAllByUser', () => {

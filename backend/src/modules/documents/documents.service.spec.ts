@@ -11,8 +11,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { DocumentsService } from './documents.service';
-import { Document } from '../database/entities/document.entity';
-import { DocumentsOpensearchRepository } from '../opensearch/documents-opensearch.repository';
+import { Document } from '../../shared/entities/document.entity';
+import { DocumentsOpensearchRepository } from '../../libs/opensearch/documents-opensearch.repository';
 import { SseService } from '../sse/sse.service';
 
 const mockRepository = {

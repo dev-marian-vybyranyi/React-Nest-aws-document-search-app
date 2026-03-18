@@ -14,9 +14,9 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Document } from '../database/entities/document.entity';
-import { DocumentsOpensearchRepository } from '../opensearch/documents-opensearch.repository';
-import { SearchDocumentsPayload } from '../opensearch/interfaces/opensearch-payloads.interface';
+import { Document } from '../../shared/entities/document.entity';
+import { DocumentsOpensearchRepository } from '../../libs/opensearch/documents-opensearch.repository';
+import { SearchDocumentsPayload } from '../../libs/opensearch/interfaces/opensearch-payloads.interface';
 import { SseService } from '../sse/sse.service';
 
 @Injectable()

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import configuration from './config/configuration';
-import { Document } from './database/entities/document.entity';
-import { DocumentsModule } from './documents/documents.module';
-import { OpensearchModule } from './opensearch/opensearch.module';
-import { SqsModule } from './sqs/sqs.module';
-import { SseModule } from './sse/sse.module';
-import { UploadsModule } from './uploads/uploads.module';
+import configuration from './shared/config/configuration';
+import { Document } from './shared/entities/document.entity';
+import { DocumentsModule } from './modules/documents/documents.module';
+import { OpensearchModule } from './libs/opensearch/opensearch.module';
+import { SqsModule } from './libs/sqs/sqs.module';
+import { SseModule } from './modules/sse/sse.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 @Module({
   imports: [

@@ -7,8 +7,8 @@ import { PDFParse } from 'pdf-parse';
 import { Readable } from 'stream';
 import { Repository } from 'typeorm';
 import WordExtractor from 'word-extractor';
-import { Document } from '../../database/entities/document.entity';
-import { DocumentsService } from '../../documents/documents.service';
+import { Document } from '../../../shared/entities/document.entity';
+import { DocumentsService } from '../../../modules/documents/documents.service';
 import { DocumentsOpensearchRepository } from '../../opensearch/documents-opensearch.repository';
 import { IndexDocumentPayload } from '../../opensearch/interfaces/opensearch-payloads.interface';
 

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  createDocument,
   deleteDocument,
   getDocuments,
   getPresignedUrl,
@@ -56,9 +57,12 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 
     set({ isUploading: true });
     try {
-      const { url } = await getPresignedUrl(userEmail, file.name);
+      const { url, key } = await getPresignedUrl(file.name);
       await uploadToS3(url, file);
+      await createDocument(userEmail, file.name, key);
       await fetchDocuments();
+    } catch (error) {
+      console.error("Upload failed", error);
     } finally {
       set({ isUploading: false });
     }

@@ -5,12 +5,23 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-export const getPresignedUrl = async (userEmail: string, filename: string) => {
-  const { data } = await api.post<{
+export const getPresignedUrl = async (filename: string) => {
+  const { data } = await api.get<{
     url: string;
+    key: string;
+  }>("/uploads/presigned-url", { params: { filename } });
+  return data;
+};
+
+export const createDocument = async (
+  userEmail: string,
+  originalFilename: string,
+  key: string,
+) => {
+  const { data } = await api.post<{
     documentId: string;
     s3Filename: string;
-  }>("/documents/presigned-url", { userEmail, filename });
+  }>("/documents", { userEmail, originalFilename, key });
   return data;
 };
 

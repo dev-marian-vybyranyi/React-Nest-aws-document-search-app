@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import WordExtractor from 'word-extractor';
 import { Document } from '../../database/entities/document.entity';
 import { DocumentsService } from '../../documents/documents.service';
-import { OpensearchService } from '../../opensearch/opensearch.service';
+import { DocumentsOpensearchRepository } from '../../opensearch/documents-opensearch.repository';
 
 @Injectable()
 export class DocumentUploadedHandler {
@@ -19,7 +19,7 @@ export class DocumentUploadedHandler {
   constructor(
     private configService: ConfigService,
     private documentsService: DocumentsService,
-    private opensearchService: OpensearchService,
+    private opensearchRepository: DocumentsOpensearchRepository,
     @InjectRepository(Document)
     private documentsRepository: Repository<Document>,
   ) {
@@ -79,7 +79,7 @@ export class DocumentUploadedHandler {
         return;
       }
 
-      await this.opensearchService.indexDocument(
+      await this.opensearchRepository.indexDocument(
         document.id,
         text,
         document.userEmail,

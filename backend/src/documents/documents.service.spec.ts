@@ -15,7 +15,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { DocumentsService } from './documents.service';
 import { Document } from '../database/entities/document.entity';
-import { OpensearchService } from '../opensearch/opensearch.service';
+import { DocumentsOpensearchRepository } from '../opensearch/documents-opensearch.repository';
 import { SseService } from '../sse/sse.service';
 
 const mockRepository = {
@@ -27,7 +27,7 @@ const mockRepository = {
   findByIds: jest.fn(),
 };
 
-const mockOpensearchService = {
+const mockOpensearchRepository = {
   indexDocument: jest.fn(),
   search: jest.fn(),
   deleteDocument: jest.fn(),
@@ -58,7 +58,7 @@ describe('DocumentsService', () => {
       providers: [
         DocumentsService,
         { provide: getRepositoryToken(Document), useValue: mockRepository },
-        { provide: OpensearchService, useValue: mockOpensearchService },
+        { provide: DocumentsOpensearchRepository, useValue: mockOpensearchRepository },
         { provide: SseService, useValue: mockSseService },
         { provide: ConfigService, useValue: mockConfigService },
       ],
@@ -169,11 +169,11 @@ describe('DocumentsService', () => {
 
       mockRepository.findOne.mockResolvedValue(mockDoc);
       mockRepository.remove.mockResolvedValue(mockDoc);
-      mockOpensearchService.deleteDocument.mockResolvedValue(undefined);
+      mockOpensearchRepository.deleteDocument.mockResolvedValue(undefined);
 
       await service.deleteDocument('uuid-1', 'test@gmail.com');
 
-      expect(mockOpensearchService.deleteDocument).toHaveBeenCalledWith(
+      expect(mockOpensearchRepository.deleteDocument).toHaveBeenCalledWith(
         'uuid-1',
       );
       expect(mockRepository.remove).toHaveBeenCalledWith(mockDoc);
@@ -201,7 +201,7 @@ describe('DocumentsService', () => {
         },
       ];
 
-      mockOpensearchService.search.mockResolvedValue(mockHits);
+      mockOpensearchRepository.search.mockResolvedValue(mockHits);
       mockRepository.findByIds.mockResolvedValue(mockDocs);
 
       const results = await service.searchDocuments(
@@ -214,7 +214,7 @@ describe('DocumentsService', () => {
     });
 
     it('should return empty array if no results', async () => {
-      mockOpensearchService.search.mockResolvedValue({ hits: [] });
+      mockOpensearchRepository.search.mockResolvedValue({ hits: [] });
       mockRepository.findByIds.mockResolvedValue([]);
 
       const results = await service.searchDocuments(

@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Document } from '../database/entities/document.entity';
-import { OpensearchService } from '../opensearch/opensearch.service';
+import { DocumentsOpensearchRepository } from '../opensearch/documents-opensearch.repository';
 import { SseService } from '../sse/sse.service';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class DocumentsService {
     @InjectRepository(Document)
     private documentsRepository: Repository<Document>,
     private configService: ConfigService,
-    private opensearchService: OpensearchService,
+    private opensearchRepository: DocumentsOpensearchRepository,
     private sseService: SseService,
   ) {
     this.s3 = new S3Client({
@@ -92,14 +92,14 @@ export class DocumentsService {
     );
 
     try {
-      await this.opensearchService.deleteDocument(id);
+      await this.opensearchRepository.deleteDocument(id);
     } catch (e) {}
 
     await this.documentsRepository.remove(document);
   }
 
   async searchDocuments(query: string, userEmail: string) {
-    const hits = await this.opensearchService.search(query, userEmail);
+    const hits = await this.opensearchRepository.search(query, userEmail);
     const ids = hits.hits.map((h: any) => h._id);
 
     const documents = await this.documentsRepository.findByIds(ids);

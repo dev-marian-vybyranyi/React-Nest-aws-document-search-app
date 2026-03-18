@@ -2,7 +2,7 @@
 
 A full-stack application for uploading, processing, and searching documents (PDF, DOCX, DOC) with real-time status updates and full-text search capabilities.
 
-## 🚀 Features
+## Features
 
 - **Asynchronous Document Processing**: Automatically extracts text from uploaded documents using AWS SQS for reliable background processing.
 - **Full-Text Search**: Highly performant search powered by OpenSearch, featuring relevant highlights from document content.
@@ -10,7 +10,7 @@ A full-stack application for uploading, processing, and searching documents (PDF
 - **Secure File Storage**: Integration with AWS S3 for secure file storage and pre-signed URL uploads.
 - **Modular Backend Architecture**: Reorganized into clean `modules`, `libs`, and `shared` layers for maintainability and scalability.
 
-## 🛠 Technology Stack
+## Technology Stack
 
 ### Backend (NestJS)
 - **Framework**: NestJS (TypeScript)
@@ -26,7 +26,7 @@ A full-stack application for uploading, processing, and searching documents (PDF
 - **Forms & Validation**: Formik + Yup
 - **API Client**: Axios
 
-## 📦 Project Structure
+## Project Structure
 
 ```text
 ├── backend/            # NestJS Application
@@ -38,7 +38,7 @@ A full-stack application for uploading, processing, and searching documents (PDF
 └── docker-compose.yml  # Local Postgres container
 ```
 
-## 🛠 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -75,6 +75,6 @@ A full-stack application for uploading, processing, and searching documents (PDF
    npm run dev
    ```
 
-## 📜 License
+## License
 
 [UNLICENSED]

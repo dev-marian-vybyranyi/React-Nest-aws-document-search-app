@@ -95,9 +95,13 @@ export class DocumentUploadedHandler {
 
       await this.documentsService.updateStatus(s3Filename, 'success');
       this.logger.log(`Successfully indexed: ${s3Filename}`);
-    } catch (error) {
-      this.logger.error(`Error processing file ${s3Filename}:`, error);
-      await this.documentsService.updateStatus(s3Filename, 'error');
+    } catch (error: any) {
+      if (error.Code === 'NoSuchKey') {
+        this.logger.warn(`File already removed before processing: ${s3Filename}`);
+      } else {
+        this.logger.error(`Error processing file ${s3Filename}:`, error);
+        await this.documentsService.updateStatus(s3Filename, 'error');
+      }
     }
   }
 

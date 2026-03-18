@@ -4,7 +4,12 @@ import {
   S3Client,
   HeadObjectCommand,
 } from '@aws-sdk/client-s3';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,6 +21,7 @@ import { SseService } from '../sse/sse.service';
 
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
   private s3: S3Client;
 
   constructor(
@@ -34,32 +40,44 @@ export class DocumentsService {
     });
   }
 
-  async createDocument(userEmail: string, originalFilename: string, key: string) {
+  async createDocument(
+    userEmail: string,
+    originalFilename: string,
+    key: string,
+  ) {
     if (!key.startsWith('tmp/')) {
-        throw new BadRequestException('Invalid temporary file key');
+      throw new BadRequestException('Invalid temporary file key');
     }
 
     const bucket = this.configService.get('aws.s3Bucket');
     const s3Filename = key.replace('tmp/', '');
 
     try {
-      await this.s3.send(new HeadObjectCommand({
-        Bucket: bucket,
-        Key: key,
-      }));
+      await this.s3.send(
+        new HeadObjectCommand({
+          Bucket: bucket,
+          Key: key,
+        }),
+      );
 
-      await this.s3.send(new CopyObjectCommand({
-        Bucket: bucket,
-        CopySource: `${bucket}/${key}`,
-        Key: s3Filename,
-      }));
+      await this.s3.send(
+        new CopyObjectCommand({
+          Bucket: bucket,
+          CopySource: `${bucket}/${key}`,
+          Key: s3Filename,
+        }),
+      );
 
-      await this.s3.send(new DeleteObjectCommand({
-        Bucket: bucket,
-        Key: key,
-      }));
+      await this.s3.send(
+        new DeleteObjectCommand({
+          Bucket: bucket,
+          Key: key,
+        }),
+      );
     } catch (e) {
-      throw new BadRequestException('Invalid or missing uploaded file in temporary storage');
+      throw new BadRequestException(
+        'Invalid or missing uploaded file in temporary storage',
+      );
     }
 
     const document = this.documentsRepository.create({
@@ -99,20 +117,51 @@ export class DocumentsService {
     const document = await this.documentsRepository.findOne({
       where: { id, userEmail },
     });
-    if (!document) throw new Error('Document not found');
-
-    await this.s3.send(
-      new DeleteObjectCommand({
-        Bucket: this.configService.get('aws.s3Bucket'),
-        Key: document.s3Filename,
-      }),
-    );
+    if (!document) {
+      throw new BadRequestException('Document not found');
+    }
 
     try {
       await this.opensearchRepository.deleteDocument(id);
-    } catch (e) {}
+    } catch (error: any) {
+      if (error?.meta?.statusCode === 404) {
+        this.logger.warn(`Document ${id} not found in OpenSearch, skipping deletion`);
+      } else {
+        this.logger.error(
+          `Failed to delete document ${id} from OpenSearch:`,
+          error,
+        );
+      }
+    }
 
-    await this.documentsRepository.remove(document);
+    try {
+      await this.s3.send(
+        new DeleteObjectCommand({
+          Bucket: this.configService.get('aws.s3Bucket'),
+          Key: document.s3Filename,
+        }),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete file ${document.s3Filename} from S3:`,
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Failed to delete document file from storage',
+      );
+    }
+
+    try {
+      await this.documentsRepository.remove(document);
+    } catch (error) {
+      this.logger.error(
+        `Failed to remove document ${id} from database:`,
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Failed to remove document record',
+      );
+    }
   }
 
   async searchDocuments(query: string, userEmail: string) {

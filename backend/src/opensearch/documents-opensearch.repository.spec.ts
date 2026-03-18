@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DocumentsOpensearchRepository } from './documents-opensearch.repository';
 import { OpensearchService } from './opensearch.service';
+import {
+  IndexDocumentPayload,
+  SearchDocumentsPayload,
+} from './interfaces/opensearch-payloads.interface';
 
 const mockClient = {
   index: jest.fn(),
@@ -58,11 +62,12 @@ describe('DocumentsOpensearchRepository', () => {
     it('should index document with correct data', async () => {
       mockClient.index.mockResolvedValue({});
 
-      await repository.indexDocument(
-        'doc-id',
-        'some text content',
-        'test@gmail.com',
-      );
+      const payload: IndexDocumentPayload = {
+        id: 'doc-id',
+        content: 'some text content',
+        userEmail: 'test@gmail.com',
+      };
+      await repository.indexDocument(payload);
 
       expect(mockClient.index).toHaveBeenCalledWith({
         index: 'documents',
@@ -92,7 +97,11 @@ describe('DocumentsOpensearchRepository', () => {
 
       mockClient.search.mockResolvedValue(mockResponse);
 
-      const result = await repository.search('text', 'test@gmail.com');
+      const payload: SearchDocumentsPayload = {
+        query: 'text',
+        userEmail: 'test@gmail.com',
+      };
+      const result = await repository.search(payload);
 
       expect(mockClient.search).toHaveBeenCalledWith(
         expect.objectContaining({

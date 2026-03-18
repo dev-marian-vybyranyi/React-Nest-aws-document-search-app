@@ -10,6 +10,7 @@ import WordExtractor from 'word-extractor';
 import { Document } from '../../database/entities/document.entity';
 import { DocumentsService } from '../../documents/documents.service';
 import { DocumentsOpensearchRepository } from '../../opensearch/documents-opensearch.repository';
+import { IndexDocumentPayload } from '../../opensearch/interfaces/opensearch-payloads.interface';
 
 @Injectable()
 export class DocumentUploadedHandler {
@@ -79,11 +80,12 @@ export class DocumentUploadedHandler {
         return;
       }
 
-      await this.opensearchRepository.indexDocument(
-        document.id,
-        text,
-        document.userEmail,
-      );
+      const payload: IndexDocumentPayload = {
+        id: document.id,
+        content: text,
+        userEmail: document.userEmail,
+      };
+      await this.opensearchRepository.indexDocument(payload);
 
       await this.documentsService.updateStatus(s3Filename, 'success');
       this.logger.log(`Successfully indexed: ${s3Filename}`);

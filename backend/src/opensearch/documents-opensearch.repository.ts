@@ -1,5 +1,9 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { OpensearchService } from './opensearch.service';
+import {
+  IndexDocumentPayload,
+  SearchDocumentsPayload,
+} from './interfaces/opensearch-payloads.interface';
 
 @Injectable()
 export class DocumentsOpensearchRepository implements OnModuleInit {
@@ -30,15 +34,17 @@ export class DocumentsOpensearchRepository implements OnModuleInit {
     }
   }
 
-  async indexDocument(documentId: string, content: string, userEmail: string) {
+  async indexDocument(payload: IndexDocumentPayload) {
+    const { id, content, userEmail } = payload;
     await this.opensearchService.client.index({
       index: this.index,
-      id: documentId,
+      id,
       body: { content, userEmail },
     });
   }
 
-  async search(query: string, userEmail: string) {
+  async search(payload: SearchDocumentsPayload) {
+    const { query, userEmail } = payload;
     const response = await this.opensearchService.client.search({
       index: this.index,
       body: {

@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Document } from '../database/entities/document.entity';
 import { DocumentsOpensearchRepository } from '../opensearch/documents-opensearch.repository';
+import { SearchDocumentsPayload } from '../opensearch/interfaces/opensearch-payloads.interface';
 import { SseService } from '../sse/sse.service';
 
 @Injectable()
@@ -99,7 +100,8 @@ export class DocumentsService {
   }
 
   async searchDocuments(query: string, userEmail: string) {
-    const hits = await this.opensearchRepository.search(query, userEmail);
+    const payload: SearchDocumentsPayload = { query, userEmail };
+    const hits = await this.opensearchRepository.search(payload);
     const ids = hits.hits.map((h: any) => h._id);
 
     const documents = await this.documentsRepository.findByIds(ids);
